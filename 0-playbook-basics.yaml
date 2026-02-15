@@ -2,10 +2,9 @@
 - name: "Play 1- Printing Out IOS Hostname and Network OS"
   hosts: "routers"
   connection: "network_cli"
-  gather_facts: false 
+  gather_facts: false
   tasks:
 
     - name: "Task 1: Print debug message of Variables for IOS"
       ansible.builtin.debug:
         msg: "The hostname is {{ inventory_hostname }}"
-        
