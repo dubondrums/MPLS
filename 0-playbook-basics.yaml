@@ -8,3 +8,11 @@
     - name: "Task 1: Print debug message of Variables for IOS"
       ansible.builtin.debug:
         msg: "The hostname is {{ inventory_hostname }}"
+
+    - name: "Cisco Stuff"
+      cisco.ios.ios.ios_hostname:
+        config:
+          hostname: R1
+        state: merged
+
+
