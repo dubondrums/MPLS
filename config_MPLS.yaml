@@ -1,0 +1,512 @@
+---
+
+## Configure Interfaces on CE Routers
+# Configure CustA-1 Interfaces
+- name: Change CustA-1 Interfaces
+  hosts: CustA-1
+
+  tasks:
+
+  - name: Enable CustA-1 interfaces
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to PE1 - GigabitEthernet0/1
+          enabled: true
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+        - name: Loopback5
+          description: Link to external network
+          enabled: true
+
+  - name: Set CustA-1 L3 info
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.0.0.1/30
+        - name: Loopback0
+          ipv4:
+            - address: 4.4.4.4/32 
+        - name: Loopback5
+          ipv4:
+            - address: 172.16.1.1/24
+
+  - name: Show CustA-1 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip int brief
+
+  # Configure CustB-1 Interfaces
+- name: Change CustB-1 Interfaces
+  hosts: CustB-1
+
+  tasks:
+
+  - name: Enable CustB-1 interfaces
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to PE1 - GigabitEthernet0/1
+          enabled: true
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+        - name: Loopback5
+          description: Link to external network
+          enabled: true    
+
+  - name: Set CustB-1 L3 info
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 20.0.0.1/30
+        - name: Loopback0
+          ipv4:
+            - address: 5.5.5.5/32 
+        - name: Loopback5
+          ipv4:
+            - address: 172.17.1.1/24
+
+  - name: Show CustB-1 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip int brief
+
+  # Configure CustA-2 Interfaces
+- name: Change CustA-2 Interfaces
+  hosts: CustA-2
+
+  tasks:
+
+  - name: Enable interfaces
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to PE2 - GigabitEthernet0/2
+          enabled: true
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+        - name: Loopback5
+          description: Link to external network
+          enabled: true    
+
+  - name: Set L3 info
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 30.0.0.1/30
+        - name: Loopback0
+          ipv4:
+            - address: 4.4.4.4/32 
+        - name: Loopback5
+          ipv4:
+            - address: 172.16.2.1/24
+
+  - name: Show CustA-2 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip int brief
+
+  # Configure CustB-2 Interfaces
+- name: Change CustB-2 Interfaces
+  hosts: CustB-2
+
+  tasks:
+
+  - name: Enable CustB-2 interfaces
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to PE2 - GigabitEthernet0/3
+          enabled: true
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+        - name: Loopback5
+          description: Link to external network
+          enabled: true    
+
+  - name: Set CustB-2 L3 info
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 30.0.0.1/30
+        - name: Loopback0
+          ipv4:
+            - address: 6.6.6.6/32 
+        - name: Loopback5
+          ipv4:
+            - address: 172.16.2.1/24
+
+  - name: Show CustB-2 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip int brief
+
+  ## Configure PE Routers   
+- name: Configure Interfaces on PE1
+  hosts: PE1
+
+  tasks: 
+
+  - name: Enable Interfaces on PE1
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to CustA-1 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/2
+          description: Connects to CustB-1 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/3
+          description: Connects to Core1
+          enabled: true  
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+  # Creates VRFs on PE1
+  - name: Create VRFs on PE1
+    cisco.ios.ios_vrf_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          vrf_name: CustA
+        - name: GigabitEthernet0/2
+          vrf_name: CustB  
+
+  # Modify VRFs on PE1
+  - name: Create VRFs on PE1
+    cisco.ios.ios_vrf:
+      vrfs:
+      - name: CustA
+        rd: "65000:10"
+        route_both: 65000:10
+      - name: CustB
+        rd: 65000:20 
+        route_both: 65000:20
+
+  - name: Show PE1 VRF's
+    cisco.ios.ios_command:
+      commands: show ip vrf
+
+  # Set IP info for Interfaces
+  - name: Set L3 information   
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.0.0.2/30
+        - name: GigabitEthernet0/2
+          ipv4:
+            - address: 20.0.0.2/30
+        - name: GigabitEthernet0/3
+          ipv4:
+            - address: 10.0.1.1/30        
+        - name: Loopback0
+          ipv4:
+            - address: 2.2.2.2/32
+
+  - name: Show CustA-1 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip int brief
+
+# Join Core-Facing Interfaces to OSPF Process
+  - name: Setup OSPF on PE1
+    cisco.ios.ios_ospfv2:
+      config:
+        processes:
+          - process_id: 1
+            areas:
+              - area_id: "0"
+                capability: true
+            network:
+              - address: 10.0.1.0
+                wildcard_bits: 0.0.0.3
+                area: 0
+              - address: 2.2.2.2
+                wildcard_bits: 0.0.0.0
+                area: 0   
+            router_id: 2.2.2.2
+            mpls:
+              ldp:
+                autoconfig:
+                  area: 0
+                  set: true
+
+  #Configure MP-BGP on PE1
+  #- name: Setup MP-BGP on PE1
+   # cisco.ios.ios_bgp_address_family:
+     # config:
+       # bgp: 
+         # neighbor_address: 3.3.3.3
+         # remote_as: 65000
+                     
+
+- name: Configure Interfaces on PE2
+  hosts: PE2
+
+  tasks: 
+
+  - name: Enable Interfaces on PE2
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/2
+          description: Connects to CustA-2 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/3
+          description: Connects to CustB-2 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/1
+          description: Connects to Core1
+          enabled: true  
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+
+ # VRF's on PE2
+  - name: Create VRFs on PE2
+    cisco.ios.ios_vrf_interfaces:
+      config:
+        - name: GigabitEthernet0/2
+          vrf_name: CustA
+        - name: GigabitEthernet0/3
+          vrf_name: CustB  
+
+  - name: Show CustA-1 IP Int Brief
+    cisco.ios.ios_command:
+      commands: show ip vrf
+
+  # Set IP info for Interfaces
+  - name: Set L3 information   
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/2
+          ipv4:
+            - address: 30.0.0.2/30
+        - name: GigabitEthernet0/3
+          ipv4:
+            - address: 40.0.0.2/30
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.0.2.1/30        
+        - name: Loopback0
+          ipv4:
+            - address: 3.3.3.3/32    
+
+  # Join Core-Facing Interfaces to OSPF Process
+  - name: Setup OSPF on PE2
+    cisco.ios.ios_ospfv2:
+      config:
+        processes:
+          - process_id: 1
+            areas:
+              - area_id: "0"
+                capability: true
+            network:
+              - address: 10.0.2.0
+                wildcard_bits: 0.0.0.3
+                area: 0
+              - address: 3.3.3.3
+                wildcard_bits: 0.0.0.0
+                area: 0   
+            router_id: 3.3.3.3
+            mpls:
+              ldp:
+                autoconfig:
+                  area: 0
+                  set: true
+
+  # Configure Core Routers
+- name: Configure Core Router 1
+  hosts: C1    
+
+  tasks:
+
+  - name: Enable Interfaces on Core1
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to PE1 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/2
+          description: Connects to Core2 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/3
+          description: Connects to Core3 - GigabitEthernet0/1
+          enabled: true  
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+
+  - name: Set IPs on Core1
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.0.1.2/30
+        - name: GigabitEthernet0/2
+          ipv4:
+            - address: 10.1.2.1/30
+        - name: GigabitEthernet0/3
+          ipv4:
+            - address: 10.1.3.1/30        
+        - name: Loopback0
+          ipv4:
+            - address: 10.10.10.10/32 
+
+  - name: Configure OSPF on Core1
+    cisco.ios.ios_ospfv2:
+      config:
+        processes:
+          - process_id: 1
+            areas:
+              - area_id: "0"
+                capability: true
+            network:
+              - address: 10.0.1.0
+                wildcard_bits: 0.0.0.3
+                area: 0
+              - address: 10.1.2.0
+                wildcard_bits: 0.0.0.3
+                area: 0  
+              - address: 10.1.3.0
+                wildcard_bits: 0.0.0.3
+                area: 0  
+              - address: 10.10.10.10
+                wildcard_bits: 0.0.0.0
+                area: 0        
+            router_id: 10.10.10.10
+            mpls:
+              ldp:
+                autoconfig:
+                  area: 0
+                  set: true
+
+- name: Configure Core Router 2
+  hosts: C2   
+
+  tasks:
+
+  - name: Enable Interfaces on Core2
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to Core1 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/2
+          description: Connects to Core3 - GigabitEthernet0/1
+          enabled: true
+        - name: GigabitEthernet0/3
+          description: Connects to PE2 - GigabitEthernet0/1
+          enabled: true  
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+
+  - name: Set IPs on Core2
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.1.2.2/30
+        - name: GigabitEthernet0/2
+          ipv4:
+            - address: 10.2.3.1/30
+        - name: GigabitEthernet0/3
+          ipv4:
+            - address: 10.0.2.2/30        
+        - name: Loopback0
+          ipv4:
+            - address: 20.20.20.20/32 
+
+  - name: Configure OSPF on Core2
+    cisco.ios.ios_ospfv2:
+      config:
+        processes:
+          - process_id: 1
+            areas:
+              - area_id: "0"
+                capability: true
+            network:
+              - address: 10.1.2.0
+                wildcard_bits: 0.0.0.3
+                area: 0
+              - address: 10.2.3.0
+                wildcard_bits: 0.0.0.3
+                area: 0  
+              - address: 10.0.2.0
+                wildcard_bits: 0.0.0.3
+                area: 0  
+              - address: 20.20.20.20
+                wildcard_bits: 0.0.0.0
+                area: 0        
+            router_id: 20.20.20.20
+            mpls:
+              ldp:
+                autoconfig:
+                  area: 0
+                  set: true
+
+- name: Configure Core Router 3
+  hosts: C3   
+
+  tasks:
+
+  - name: Enable Interfaces on Core3
+    cisco.ios.ios_interfaces:
+      config:
+        - name: GigabitEthernet0/1
+          description: Connects to Core1 - GigabitEthernet0/3
+          enabled: true
+        - name: GigabitEthernet0/2
+          description: Connects to Core2 - GigabitEthernet0/2
+          enabled: true
+        - name: Loopback0
+          description: Loopback 0
+          enabled: true
+
+  - name: Set IPs on Core3
+    cisco.ios.ios_l3_interfaces:
+      config: 
+        - name: GigabitEthernet0/1
+          ipv4:
+            - address: 10.1.3.2/30
+        - name: GigabitEthernet0/2
+          ipv4:
+            - address: 10.2.3.2/30     
+        - name: Loopback0
+          ipv4:
+            - address: 30.30.30.30/32 
+
+  - name: Configure OSPF on Core3
+    cisco.ios.ios_ospfv2:
+      config:
+        processes:
+          - process_id: 1
+            areas:
+              - area_id: "0"
+                capability: true
+            network:
+              - address: 10.1.3.0
+                wildcard_bits: 0.0.0.3
+                area: 0
+              - address: 10.2.3.0
+                wildcard_bits: 0.0.0.3
+                area: 0  
+              - address: 30.30.30.30
+                wildcard_bits: 0.0.0.0
+                area: 0        
+            router_id: 30.30.30.30
+            mpls:
+              ldp:
+                autoconfig:
+                  area: 0
+                  set: true
+
+
+
+
+
+
+
