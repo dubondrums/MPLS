@@ -1,2 +1,13 @@
 ---
-- name: Configure L2 Interfaces
+- name: "Enable CustA-1 interfaces"
+  cisco.ios.ios_interfaces:
+    config:
+      - name: GigabitEthernet0/1
+        description: Connects to PE1 - GigabitEthernet0/1
+        enabled: true
+      - name: Loopback0
+        description: Loopback 0
+        enabled: true
+      - name: Loopback5
+        description: Link to external network
+        enabled: true 

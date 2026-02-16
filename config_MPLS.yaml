@@ -7,7 +7,7 @@
 
   tasks:
 
-  - name: Enable CustA-1 interfaces
+  - name: "Enable CustA-1 interfaces"
     cisco.ios.ios_interfaces:
       config:
         - name: GigabitEthernet0/1
